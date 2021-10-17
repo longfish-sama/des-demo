@@ -150,34 +150,50 @@ bitset<32> f(bitset<32> &data, bitset<48> &key)
 
 bitset<48> *genSubKey(bitset<64> org_key)
 {
-    bitset<56> key;
-    bitset<28> left, right, tmp_left, tmp_right;
-    bitset<48> sub_key[16];
+    bitset<56> key, tmp_sub_key;
+    bitset<28> left, right, left_ls, right_ls;
+    static bitset<48> sub_key[16];
     for (size_t i = 0; i < 64; i++)
-    {
+    { //置换选择1
         key[55 - i] = org_key[64 - table_PC1[i]];
     }
     for (size_t i = 0; i < 16; i++)
-    {
+    { //生成16个密钥ki
         /* code */
         for (size_t j = 0; j < 28; j++)
-        {
+        { //分为两部分
             left[j] = key[j + 28];
             right[j] = key[j];
         }
         for (size_t j = 0; j < 28; i++)
-        {
-            /* code */
+        { //循环左移
             if (j < table_LShiftBits[i])
             {
-                tmp_left[j] = left[28 - table_LShiftBits[i] + j];
-                tmp_right[j] = right[28 - table_LShiftBits[i] + j];
+                left_ls[j] = left[28 - table_LShiftBits[i] + j];
+                right_ls[j] = right[28 - table_LShiftBits[i] + j];
             }
             else
             {
-                tmp_left[j] = left[j - table_LShiftBits[i]];
-                tmp_right[j] = right[j - table_LShiftBits[i]];
+                left_ls[j] = left[j - table_LShiftBits[i]];
+                right_ls[j] = right[j - table_LShiftBits[i]];
             }
         }
+        for (size_t j = 0; j < 56; j++)
+        { //合并循环左移结果
+            if (j < 28)
+            {
+                tmp_sub_key[j] = right_ls[j];
+            }
+            else
+            {
+                tmp_sub_key[j] = left_ls[j - 28];
+            }
+        }
+        for (size_t j = 0; j < 48; j++)
+        {
+            /* code */
+            sub_key[i][47 - j] = tmp_sub_key[56 - table_PC2[j]];
+        }
     }
+    return sub_key;
 }
