@@ -1,5 +1,6 @@
 #include <iostream>
 #include <bitset>
+#include <vector>
 using namespace std;
 
 const unsigned short table_IP[] =
@@ -148,12 +149,12 @@ bitset<32> f(bitset<32> &data, bitset<48> &key)
     return pbox_data;
 }
 
-bitset<48> *genSubKey(bitset<64> org_key)
+void genSubKey(bitset<64> org_key, bitset<48> *sub_key)
 {
     bitset<56> key, tmp_sub_key;
     bitset<28> left, right, left_ls, right_ls;
-    static bitset<48> sub_key[16];
-    for (size_t i = 0; i < 64; i++)
+    //static bitset<48> sub_key[16];
+    for (size_t i = 0; i < 56; i++)
     { //ÖÃ»»Ñ¡Ôñ1
         key[55 - i] = org_key[64 - table_PC1[i]];
     }
@@ -165,7 +166,7 @@ bitset<48> *genSubKey(bitset<64> org_key)
             left[j] = key[j + 28];
             right[j] = key[j];
         }
-        for (size_t j = 0; j < 28; i++)
+        for (size_t j = 0; j < 28; j++)
         { //Ñ­»·×óÒÆ
             if (j < table_LShiftBits[i])
             {
@@ -195,5 +196,4 @@ bitset<48> *genSubKey(bitset<64> org_key)
             sub_key[i][47 - j] = tmp_sub_key[56 - table_PC2[j]];
         }
     }
-    return sub_key;
 }

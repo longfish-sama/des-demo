@@ -7,18 +7,23 @@
 using namespace std;
 using namespace clipp;
 
-bitset<64> strToBits(string str)
+bitset<64> strKeyToBits(string str)
 {
-
-    cout << str.substr(0, 8) << endl;
-    bitset<64> strbit = bitset<64>('sac');
-    cout << strbit << endl;
+    bitset<64> bit_str;
+    bitset<8> tmp_bit;
     for (size_t i = 0; i < (str.length() < 8 ? str.length() : 8); i++)
     {
-        /* code */
+        tmp_bit = str[i];
+        bit_str[(7 - i) * 8 + 7] = tmp_bit[7];
+        bit_str[(7 - i) * 8 + 6] = tmp_bit[6];
+        bit_str[(7 - i) * 8 + 5] = tmp_bit[5];
+        bit_str[(7 - i) * 8 + 4] = tmp_bit[4];
+        bit_str[(7 - i) * 8 + 3] = tmp_bit[3];
+        bit_str[(7 - i) * 8 + 2] = tmp_bit[2];
+        bit_str[(7 - i) * 8 + 1] = tmp_bit[1];
+        bit_str[(7 - i) * 8 + 0] = tmp_bit[0];
     }
-
-    return strbit;
+    return bit_str;
 }
 
 int main(int argc, char *argv[])
@@ -27,9 +32,8 @@ int main(int argc, char *argv[])
     cout << in << endl;
     cout << (in << 2) << endl;
 
-    string filepath = "";
+    string filepath = "none";
     string key = "123456";
-    strToBits("123456789");
     bool mode = 0;
     auto cli = ((option("-f", "--filepath") & value("input file", filepath)) % "file path",
                 (option("-k", "--key") & value("key", key)) % "key for encrypt/decrypt",
@@ -49,6 +53,9 @@ int main(int argc, char *argv[])
     {
         cout << "mode: decrypt" << endl;
     }
+
+    bitset<48> subkey[16];
+    genSubKey(strKeyToBits(key), subkey);
 
     return 0;
 }
