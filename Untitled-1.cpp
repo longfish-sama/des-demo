@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     cout << in << endl;
     cout << (in << 2) << endl;
 
-    string filepath = "none";
+    string filepath = "LICENSE";
     string key = "123456";
     bool mode = 0;
     auto cli = ((option("-f", "--filepath") & value("input file", filepath)) % "file path",
@@ -56,6 +56,23 @@ int main(int argc, char *argv[])
 
     bitset<48> subkey[16];
     genSubKey(strKeyToBits(key), subkey);
+
+    ifstream in_file(filepath, ios::in | ios::binary);
+    if (!in_file.is_open())
+    {
+        cout << make_man_page(cli, argv[0]) << endl;
+        return 1;
+    }
+    vector<bitset<64>> in_file_data;
+    bitset<64> tmp_data;
+    while (in_file.read((char *)&tmp_data, sizeof(tmp_data)))
+    {
+        in_file_data.push_back(tmp_data);
+        tmp_data.reset();
+    }
+    in_file.close();
+    
+    cout<<in_file.gcount()<<endl;
 
     return 0;
 }
