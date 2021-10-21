@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
     ifstream in_file(filepath, ios::in | ios::binary);
     if (!in_file.is_open())
     {
+        cout << "read file: " + filepath + " error" << endl;
         cout << make_man_page(cli, argv[0]) << endl;
         return 1;
     }
@@ -71,8 +72,52 @@ int main(int argc, char *argv[])
         tmp_data.reset();
     }
     in_file.close();
-    
-    cout<<in_file.gcount()<<endl;
 
+    vector<bitset<64>> out_file_data;
+    for (size_t i = 0; i < in_file_data.size(); i++)
+    {
+        /* code */
+        bitset<64> tmp_ip = initPermutation(in_file_data[i]);
+        bitset<32> tmp_left1, tmp_right, tmp_left2;
+        for (size_t j = 0; j < 32; j++)
+        { //分为两部分
+            tmp_right[j] = tmp_ip[j];
+            tmp_left1[j] = tmp_ip[j + 32];
+        }
+        for (size_t j = 0; j < 16; j++)
+        { //16轮迭代
+            /* code */
+            tmp_left2 = tmp_right;
+            tmp_right = tmp_left1 ^ f(tmp_right, subkey[j]);
+            tmp_left1 = tmp_left2;
+        }
+        bitset<64> tmp_comb;
+        for (size_t j = 0; j < 32; j++)
+        { //合并两部分
+            /* code */
+            tmp_comb[j] = tmp_left1[j];
+            tmp_comb[j + 32] = tmp_right[j];
+        }
+        bitset<64> tmp_ipinv = initPermutationInv(tmp_comb);
+        out_file_data.push_back(tmp_ipinv);
+    }
+
+    ofstream out_file(filepath + ".data", ios::out | ios::binary);
+    if (!out_file.is_open())
+    {
+        /* code */
+        cout << "write file: " + filepath + ".data error" << endl;
+        cout << make_man_page(cli, argv[0]) << endl;
+        return 1;
+    }
+    for (size_t i = 0; i < out_file_data.size(); i++)
+    {
+        /* code */
+        out_file.write((char *)&out_file_data[i], sizeof(out_file_data[i]));
+    }
+    out_file.close();
+
+    cout << in_file.gcount() << endl;
+    cout << sizeof(out_file_data[0]) << endl;
     return 0;
 }

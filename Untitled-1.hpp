@@ -93,6 +93,16 @@ bitset<64> initPermutation(bitset<64> &plaintext)
     return ip_bits;
 }
 
+bitset<64> initPermutationInv(bitset<64> &plaintext)
+{ //初始置换
+    bitset<64> ip_inv_bits;
+    for (size_t i = 0; i < 64; i++)
+    { //最高位为第1位（左）
+        ip_inv_bits[63 - i] = plaintext[64 - table_IPInv[i]];
+    }
+    return ip_inv_bits;
+}
+
 bitset<48> expansion(bitset<32> &data)
 { //扩展置换
     bitset<48> expand_bits;
@@ -126,7 +136,7 @@ bitset<32> sBox(bitset<48> &expand_data)
     return sbox_bits;
 }
 
-bitset<32> pBox(bitset<32> sbox_data)
+bitset<32> pBox(bitset<32> &sbox_data)
 { //p盒置换
     bitset<32> pbox_bits;
     for (size_t i = 0; i < 32; i++)
