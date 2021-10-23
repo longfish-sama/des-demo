@@ -30,11 +30,7 @@ bitset<64> strKeyToBits(string str)
 
 int main(int argc, char *argv[])
 {
-    bitset<4> in("1001");
-    cout << in << endl;
-    cout << (in << 2) << endl;
-
-    string filepath = "LICENSE";
+    string filepath = "";
     string key = "0";
     bool mode = ENCRYPT;
     auto cli = ((option("-f", "--filepath") & value("input file", filepath)) % "file path",
@@ -47,19 +43,21 @@ int main(int argc, char *argv[])
     }
     cout << "file path: " << filepath << endl;
     cout << "key: " << key << endl;
-    if (mode == 0)
+    if (mode == ENCRYPT)
     {
         cout << "mode: encrypt" << endl;
     }
-    else if (mode == 1)
+    else if (mode == DECRYPT)
     {
         cout << "mode: decrypt" << endl;
     }
 
+    //生成16个子密钥
     bitset<48> subkey[16];
     genSubKey(strKeyToBits(key), subkey);
 
-    ifstream in_file(filepath, ios::in | ios::binary);
+    //读文件
+    ifstream in_file(filepath, ios::in | ios::binary); //二进制读取
     if (!in_file.is_open())
     {
         cout << "read file: " + filepath + " error" << endl;
@@ -74,13 +72,15 @@ int main(int argc, char *argv[])
         tmp_data.reset();
     }
     in_file.close();
+    cout << "read " << in_file_data.size() * 8 << " bytes" << endl;
 
+    //加密
     if (mode == ENCRYPT)
     {
         vector<bitset<64>> out_file_data;
-        for (size_t i = 0; i < in_file_data.size(); i++)
+        for (size_t i = 0; i < in_file_data.size(); i++) //逐64bits数据块运算
         {
-            bitset<64> tmp_ip = initPermutation(in_file_data[i]);
+            bitset<64> tmp_ip = initPermutation(in_file_data[i]); //初始置换
             bitset<32> tmp_left1, tmp_right, tmp_left2;
             for (size_t j = 0; j < 32; j++)
             { //分为两部分
@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
             }
             for (size_t j = 0; j < 16; j++)
             { //16轮迭代
-                /* code */
                 tmp_left2 = tmp_right;
                 tmp_right = tmp_left1 ^ f(tmp_right, subkey[j]);
                 tmp_left1 = tmp_left2;
@@ -100,10 +99,10 @@ int main(int argc, char *argv[])
                 tmp_comb[j] = tmp_left1[j];
                 tmp_comb[j + 32] = tmp_right[j];
             }
-            bitset<64> tmp_ipinv = initPermutationInv(tmp_comb);
+            bitset<64> tmp_ipinv = initPermutationInv(tmp_comb); //逆初始置换
             out_file_data.push_back(tmp_ipinv);
         }
-
+        //写文件
         ofstream out_file(filepath + ".data", ios::out | ios::binary);
         if (!out_file.is_open())
         {
@@ -116,14 +115,16 @@ int main(int argc, char *argv[])
             out_file.write((char *)&out_file_data[i], sizeof(out_file_data[i]));
         }
         out_file.close();
+        cout << "encrypted file: " + filepath + ".data saved" << endl;
     }
 
+    //解密
     else if (mode == DECRYPT)
     {
         vector<bitset<64>> out_file_data;
-        for (size_t i = 0; i < in_file_data.size(); i++)
+        for (size_t i = 0; i < in_file_data.size(); i++) //逐64bits数据块运算
         {
-            bitset<64> tmp_ip = initPermutation(in_file_data[i]);
+            bitset<64> tmp_ip = initPermutation(in_file_data[i]); //初始置换
             bitset<32> tmp_left1, tmp_right, tmp_left2;
             for (size_t j = 0; j < 32; j++)
             { //分为两部分
@@ -132,9 +133,8 @@ int main(int argc, char *argv[])
             }
             for (size_t j = 0; j < 16; j++)
             { //16轮迭代
-                /* code */
                 tmp_left2 = tmp_right;
-                tmp_right = tmp_left1 ^ f(tmp_right, subkey[15-j]);
+                tmp_right = tmp_left1 ^ f(tmp_right, subkey[15 - j]); //逆序使用子密钥
                 tmp_left1 = tmp_left2;
             }
             bitset<64> tmp_comb;
@@ -143,14 +143,14 @@ int main(int argc, char *argv[])
                 tmp_comb[j] = tmp_left1[j];
                 tmp_comb[j + 32] = tmp_right[j];
             }
-            bitset<64> tmp_ipinv = initPermutationInv(tmp_comb);
+            bitset<64> tmp_ipinv = initPermutationInv(tmp_comb); //逆初始置换
             out_file_data.push_back(tmp_ipinv);
         }
-
+        //写文件
         ofstream out_file(filepath + ".rec", ios::out | ios::binary);
         if (!out_file.is_open())
         {
-            cout << "write file: " + filepath + ".data error" << endl;
+            cout << "write file: " + filepath + ".rec error" << endl;
             cout << make_man_page(cli, argv[0]) << endl;
             return 1;
         }
@@ -159,7 +159,8 @@ int main(int argc, char *argv[])
             out_file.write((char *)&out_file_data[i], sizeof(out_file_data[i]));
         }
         out_file.close();
+        cout << "decrypted file: " + filepath + ".rec saved" << endl;
     }
-    
+
     return 0;
 }
