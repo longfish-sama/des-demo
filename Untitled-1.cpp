@@ -33,9 +33,9 @@ int main(int argc, char *argv[])
     string filepath = "";
     string key = "0";
     bool mode = true;
-    auto cli = ((option("-f", "--filepath") & value("input file", filepath)) % "file path",
-                (option("-k", "--key") & value("key", key)) % "key for encrypt/decrypt",
-                (option("-e", "--encrypt").set(mode, ENCRYPT) | option("-d", "--decrypt").set(mode, DECRYPT)) % "set mode");
+    auto cli = ((required("-f", "--filepath") & value("input file", filepath)) % "file path",
+                (required("-k", "--key") & value("key", key)) % "key for encrypt/decrypt",
+                (required("-e", "--encrypt").set(mode, ENCRYPT) | required("-d", "--decrypt").set(mode, DECRYPT)) % "set mode");
     if (!parse(argc, argv, cli))
     {
         cout << make_man_page(cli, argv[0]) << endl;
