@@ -6,8 +6,8 @@
 #include "clipp.h"
 using namespace std;
 using namespace clipp;
-#define ENCRYPT 0
-#define DECRYPT 1
+#define ENCRYPT true
+#define DECRYPT false
 
 bitset<64> strKeyToBits(string str)
 {
@@ -32,15 +32,22 @@ int main(int argc, char *argv[])
 {
     string filepath = "";
     string key = "0";
-    bool mode = ENCRYPT;
+    bool mode = true;
     auto cli = ((option("-f", "--filepath") & value("input file", filepath)) % "file path",
                 (option("-k", "--key") & value("key", key)) % "key for encrypt/decrypt",
-                (option("-m", "--mode") & value("mode", mode)) % "0 for encrypt, 1 for decrypt");
-    if (!parse(argc, argv, cli) || filepath.empty())
+                (option("-e", "--encrypt").set(mode, ENCRYPT) | option("-d", "--decrypt").set(mode, DECRYPT)) % "set mode");
+    if (!parse(argc, argv, cli))
     {
         cout << make_man_page(cli, argv[0]) << endl;
         return 1;
     }
+    if (filepath.empty())
+    {
+        cout << "file path empty" << endl;
+        cout << make_man_page(cli, argv[0]) << endl;
+        return 1;
+    }
+
     cout << "file path: " << filepath << endl;
     cout << "key: " << key << endl;
     if (mode == ENCRYPT)
